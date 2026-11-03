@@ -58,6 +58,12 @@ namespace Recap
             if ((!name || !*name) && a_player->GetParentCell()) {
                 name = a_player->GetParentCell()->GetFullName();
             }
+            // Wilderness cells have no name; the worldspace ("Skyrim", "Solstheim") still tells where you are.
+            if ((!name || !*name)) {
+                if (const auto* ws = a_player->GetWorldspace()) {
+                    name = ws->GetFullName();
+                }
+            }
             return name && *name ? "Location: "s + name : std::string{};
         }
 
