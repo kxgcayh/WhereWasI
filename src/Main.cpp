@@ -7,7 +7,8 @@ namespace
     constexpr std::uint32_t kUniqueID = 'WWAI';
     constexpr std::uint32_t kRecordTime = 'TIME';
     constexpr std::uint32_t kRecordVersion = 1;
-    constexpr auto kIniPath = "Data/SKSE/Plugins/WhereWasI.ini";
+    constexpr auto kIniRelPath = "Data/SKSE/Plugins/WhereWasI.ini";
+    std::string g_iniPath;  // absolute: GetPrivateProfileString looks in the Windows folder for a relative path
 
     struct Config
     {
@@ -21,12 +22,15 @@ namespace
     std::string IniString(const char* a_key, const char* a_default)
     {
         char buf[64]{};
-        REX::W32::GetPrivateProfileStringA("General", a_key, a_default, buf, sizeof(buf), kIniPath);
+        REX::W32::GetPrivateProfileStringA("General", a_key, a_default, buf, sizeof(buf), g_iniPath.c_str());
         return buf;
     }
 
     void LoadConfig()
     {
+        std::error_code ec;
+        g_iniPath = (std::filesystem::current_path(ec) / kIniRelPath).string();
+        logger::info("ini: '{}' exists={}", g_iniPath, std::filesystem::exists(g_iniPath, ec));
         try {
             g_config.minHoursAway = std::stod(IniString("fMinHoursAway", "4.0"));
         } catch (...) {
@@ -39,13 +43,25 @@ namespace
             g_config.options.showQuest, g_config.options.showLocation, g_config.options.showSnapshot);
     }
 
+    std::string LocalTime(std::int64_t a_unix)
+    {
+        std::tm tm{};
+        const std::time_t t = a_unix;
+        if (localtime_s(&tm, &t) != 0) {
+            return "?";
+        }
+        char buf[32];
+        std::strftime(buf, sizeof(buf), "%Y-%m-%d %H:%M:%S", &tm);
+        return buf;
+    }
+
     void OnSave(SKSE::SerializationInterface* a_intfc)
     {
         const std::int64_t now = std::time(nullptr);
         if (!a_intfc->WriteRecord(kRecordTime, kRecordVersion, now)) {
-            logger::error("failed to write save timestamp");
+            logger::error("co-save: FAILED to write timestamp {}", now);
         } else {
-            logger::info("co-save: wrote timestamp {}", now);
+            logger::info("co-save: wrote timestamp {} ({})", now, LocalTime(now));
         }
     }
 
@@ -53,14 +69,23 @@ namespace
     {
         g_lastSaved = 0;
         std::uint32_t type, version, length;
+        int records = 0;
         while (a_intfc->GetNextRecordInfo(type, version, length)) {
+            ++records;
             if (type == kRecordTime && version == kRecordVersion && length == sizeof(std::int64_t)) {
-                a_intfc->ReadRecordData(g_lastSaved);
+                if (a_intfc->ReadRecordData(g_lastSaved) != sizeof(std::int64_t)) {
+                    logger::error("co-save: short read of timestamp record");
+                    g_lastSaved = 0;
+                }
             } else {
                 logger::warn("co-save: skipped record type {:#x} v{} len {}", type, version, length);
             }
         }
-        logger::info("co-save: loaded timestamp {}", g_lastSaved);
+        if (g_lastSaved) {
+            logger::info("co-save: {} record(s), timestamp {} ({})", records, g_lastSaved, LocalTime(g_lastSaved));
+        } else {
+            logger::info("co-save: {} record(s), no timestamp (save made before install, or no co-save)", records);
+        }
     }
 
     void OnRevert(SKSE::SerializationInterface*)
@@ -71,9 +96,14 @@ namespace
 
     void ShowRecap()
     {
-        const std::int64_t away = g_lastSaved ? std::time(nullptr) - g_lastSaved : -1;
-        if (away >= 0 && away < static_cast<std::int64_t>(g_config.minHoursAway * 3600.0)) {
-            logger::info("away {}s, under threshold; no recap", away);
+        const std::int64_t now = std::time(nullptr);
+        // -1 = unknown (no stamp). A stamp in the future (clock moved back, other PC) counts as 0, not unknown.
+        const std::int64_t away = g_lastSaved ? std::max<std::int64_t>(now - g_lastSaved, 0) : -1;
+        const auto threshold = static_cast<std::int64_t>(g_config.minHoursAway * 3600.0);
+        logger::info("away: now {} ({}), saved {}, away {}s, threshold {}s", now, LocalTime(now),
+            g_lastSaved ? LocalTime(g_lastSaved) : "unknown"s, away, threshold);
+        if (away >= 0 && away < threshold) {
+            logger::info("under threshold; no recap");
             return;
         }
         const auto text = Recap::Build(away, g_config.options);
@@ -125,7 +155,10 @@ namespace
             break;
         case SKSE::MessagingInterface::kPostLoadGame:
             g_pendingRecap = a_msg->data != nullptr;  // data is the load-success bool
-            logger::info("post load game; pending recap = {}", g_pendingRecap);
+            logger::info("post load game: load {}; pending recap = {}", g_pendingRecap ? "succeeded" : "FAILED", g_pendingRecap);
+            break;
+        case SKSE::MessagingInterface::kSaveGame:
+            logger::info("---- saved game '{}'", a_msg->data ? static_cast<const char*>(a_msg->data) : "");
             break;
         case SKSE::MessagingInterface::kNewGame:
             g_pendingRecap = false;

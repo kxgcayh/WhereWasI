@@ -36,7 +36,7 @@ namespace Format
         return negative ? "-" + digits : digits;
     }
 
-    std::string ResolveTags(std::string_view a_text,
+    std::optional<std::string> ResolveTags(std::string_view a_text,
         const std::function<std::optional<std::string>(std::string_view)>& a_lookup)
     {
         std::string out;
@@ -53,9 +53,11 @@ namespace Format
             const auto tag = a_text.substr(open + 1, close - open - 1);
             const auto eq = tag.find('=');
             if (tag.starts_with("Alias") && eq != std::string_view::npos) {
-                if (auto name = a_lookup(tag.substr(eq + 1)); name && !name->empty()) {
-                    out.append(*name);
+                auto name = a_lookup(tag.substr(eq + 1));
+                if (!name || name->empty()) {
+                    return std::nullopt;
                 }
+                out.append(*name);
             }
             pos = close + 1;
         }

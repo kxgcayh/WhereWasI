@@ -15,8 +15,8 @@ namespace Format
     // 1240 -> "1,240"
     std::string Thousands(std::int64_t a_value);
 
-    // Replaces <Alias=Name> / <Alias.ShortName=Name> via a_lookup; other tags, and aliases the
-    // lookup cannot fill, are removed. Collapses the double spaces that removal leaves.
-    std::string ResolveTags(std::string_view a_text,
+    // Replaces <Alias=Name> / <Alias.ShortName=Name> via a_lookup; other tags are removed and the double
+    // spaces that leaves are collapsed. Returns nullopt if any alias cannot be filled ("Bring the  to X").
+    std::optional<std::string> ResolveTags(std::string_view a_text,
         const std::function<std::optional<std::string>(std::string_view)>& a_lookup);
 }

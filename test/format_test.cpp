@@ -32,11 +32,11 @@ int main()
     };
     assert(ResolveTags("Speak to <Alias=Jarl>", lookup) == "Speak to Balgruuf");
     assert(ResolveTags("Speak to <Alias.ShortName=Jarl> now", lookup) == "Speak to Balgruuf now");
-    assert(ResolveTags("Bring the <Alias=Item> to <Alias=Jarl>", lookup) == "Bring the to Balgruuf");
+    assert(!ResolveTags("Bring the <Alias=Item> to <Alias=Jarl>", lookup));
     assert(ResolveTags("Collect <Global=Count> pelts", lookup) == "Collect pelts");
     assert(ResolveTags("No tags", lookup) == "No tags");
     assert(ResolveTags("Broken <tag", lookup) == "Broken <tag");
-    assert(ResolveTags("", lookup).empty());
+    assert(ResolveTags("", lookup)->empty());
 
     std::puts("format_test: OK");
     return 0;

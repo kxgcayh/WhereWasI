@@ -39,15 +39,22 @@ namespace Recap
             }
 
             auto* quest = found->ownerQuest;
-            logger::info("quest source: {:#x} '{}' objective {}", quest->GetFormID(), quest->GetFormEditorID(), found->index);
-            std::string line = "Quest: ";
-            line += quest->GetFullName();
+            const char* questName = quest->GetFullName();
             const auto objective = Format::ResolveTags(found->displayText.c_str(),
                 [quest](std::string_view a) { return AliasName(quest, a); });
-            if (!objective.empty()) {
-                line += " - " + objective;
+            logger::info("quest source: {:#x} '{}' name '{}' objective {} text '{}' resolved '{}'", quest->GetFormID(),
+                quest->GetFormEditorID(), questName ? questName : "", found->index, found->displayText.c_str(),
+                objective ? *objective : "<unresolved alias, dropped>"s);
+
+            std::string line;
+            if (questName && *questName) {
+                line = questName;
             }
-            return line;
+            // An objective with an unfillable alias would read "Bring the  to X": show the quest name alone.
+            if (objective && !objective->empty()) {
+                line += (line.empty() ? "" : " - ") + *objective;
+            }
+            return line.empty() ? line : "Quest: " + line;
         }
 
         // First non-empty name on a location and its parents (a wilderness area location is often unnamed; its hold is not).
@@ -70,13 +77,19 @@ namespace Recap
             if (!a_ws || !a_ws->persistentCell) {
                 return {};
             }
+            // Two exterior cells (4096 units each). Farther than that, "near X" misleads; fall back to the worldspace.
+            constexpr float kMaxDist = 8192.0f;
             const auto pos = a_player->GetPosition();
             std::string best;
-            float bestDist = std::numeric_limits<float>::max();
+            float bestDist = kMaxDist * kMaxDist;
+            int seen = 0;
             a_ws->persistentCell->ForEachReference([&](RE::TESObjectREFR* a_ref) {
                 const auto* marker = a_ref ? a_ref->extraList.GetByType<RE::ExtraMapMarker>() : nullptr;
-                const char* n = marker && marker->mapData ? marker->mapData->locationName.fullName.c_str() : nullptr;
+                const auto* data = marker ? marker->mapData : nullptr;
+                // Visible = discovered (or shown on the map): an undiscovered place's name would be a spoiler.
+                const char* n = data && data->flags.all(RE::MapMarkerData::Flag::kVisible) ? data->locationName.fullName.c_str() : nullptr;
                 if (n && *n) {
+                    ++seen;
                     const auto d = a_ref->GetPosition() - pos;
                     if (const float dist = d.x * d.x + d.y * d.y; dist < bestDist) {
                         bestDist = dist;
@@ -85,8 +98,8 @@ namespace Recap
                 }
                 return RE::BSContainer::ForEachResult::kContinue;
             });
-            logger::info("nearest map marker: '{}' at {:.0f} units (player at {:.0f},{:.0f})", best,
-                best.empty() ? 0.0f : std::sqrt(bestDist), pos.x, pos.y);
+            logger::info("nearest map marker: '{}' at {:.0f} units, {} visible markers, limit {:.0f} (player at {:.0f},{:.0f})",
+                best, best.empty() ? 0.0f : std::sqrt(bestDist), seen, kMaxDist, pos.x, pos.y);
             return best;
         }
 
