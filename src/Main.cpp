@@ -78,8 +78,11 @@ namespace
         }
         const auto text = Recap::Build(away, g_config.options);
         logger::info("recap (away {}s):\n{}", away, text);
-        if (!text.empty()) {
+        if (text.empty()) {
+            logger::warn("recap text is empty; no box shown");
+        } else {
             RE::DebugMessageBox(text.c_str());
+            logger::info("message box shown");
         }
     }
 
@@ -117,6 +120,9 @@ namespace
                 logger::error("data loaded but RE::UI is null; recap will never show");
             }
             break;
+        case SKSE::MessagingInterface::kPreLoadGame:
+            logger::info("---- loading save '{}'", a_msg->data ? static_cast<const char*>(a_msg->data) : "");
+            break;
         case SKSE::MessagingInterface::kPostLoadGame:
             g_pendingRecap = a_msg->data != nullptr;  // data is the load-success bool
             logger::info("post load game; pending recap = {}", g_pendingRecap);
@@ -133,8 +139,9 @@ namespace
 
 SKSEPluginLoad(const SKSE::LoadInterface* a_skse)
 {
-    SKSE::Init(a_skse);  // opens Documents/My Games/.../SKSE/WhereWasI.log
-    spdlog::default_logger()->flush_on(spdlog::level::info);  // a crash must not eat the last lines
+    // Rotate on open: a relaunch moves the previous session to WhereWasI.1.log (up to .5) instead of erasing it.
+    // InitInfo also sets flush_on(info), so every line reaches disk at once.
+    SKSE::Init(a_skse, { .logRotate = 5 });
     logger::info("WhereWasI loading on Skyrim {}", REL::Module::get().version().string());
 
     LoadConfig();
