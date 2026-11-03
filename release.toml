@@ -1,0 +1,18 @@
+name = "WhereWasI"
+display_name = "Where Was I"
+version = "1.0.0"
+description = "Recap on save load after a break: last played, active quest, location, level, gold and bounty. SKSE plugin, no ESP."
+
+# archive path = source path (relative to this folder)
+[files]
+"SKSE/Plugins/WhereWasI.dll" = "build/WhereWasI.dll"
+"SKSE/Plugins/WhereWasI.ini" = "WhereWasI.ini"
+
+[nexus]
+mod_id = 0      # set after creating the mod page on nexusmods.com
+file_id = 0     # first file is uploaded on the website; then Files tab -> API Info
+category = "main"
+archive_existing = true
+
+[github]
+repo = "kxgcayh/WhereWasI"
