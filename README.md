@@ -2,6 +2,8 @@
 
 A small SKSE plugin for Skyrim players with a busy life outside the game.
 
+Download: [Nexus Mods](https://www.nexusmods.com/skyrimspecialedition/mods/197919) or [GitHub Releases](https://github.com/kxgcayh/WhereWasI/releases).
+
 You load a save after a week of work, and you are standing on a hillside with no idea why. Where were you going?
 Which quest was it? Where Was I answers that once, as a short message when the save loads:
 

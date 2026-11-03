@@ -22,8 +22,8 @@ description = "Recap on save load after a break: last played, active quest, loca
 "fomod/options/4w/WhereWasI.ini" = "fomod/options/4w/WhereWasI.ini"
 
 [nexus]
-mod_id = 0      # set after creating the mod page on nexusmods.com
-file_id = 0     # first file is uploaded on the website; then Files tab -> API Info
+mod_id = 197919  # https://www.nexusmods.com/skyrimspecialedition/mods/197919
+file_id = 831653  # main file "Where Was I"
 category = "main"
 archive_existing = true
 
