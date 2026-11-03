@@ -44,20 +44,30 @@ namespace
         const std::int64_t now = std::time(nullptr);
         if (!a_intfc->WriteRecord(kRecordTime, kRecordVersion, now)) {
             logger::error("failed to write save timestamp");
+        } else {
+            logger::info("co-save: wrote timestamp {}", now);
         }
     }
 
     void OnLoad(SKSE::SerializationInterface* a_intfc)
     {
+        g_lastSaved = 0;
         std::uint32_t type, version, length;
         while (a_intfc->GetNextRecordInfo(type, version, length)) {
             if (type == kRecordTime && version == kRecordVersion && length == sizeof(std::int64_t)) {
                 a_intfc->ReadRecordData(g_lastSaved);
+            } else {
+                logger::warn("co-save: skipped record type {:#x} v{} len {}", type, version, length);
             }
         }
+        logger::info("co-save: loaded timestamp {}", g_lastSaved);
     }
 
-    void OnRevert(SKSE::SerializationInterface*) { g_lastSaved = 0; }
+    void OnRevert(SKSE::SerializationInterface*)
+    {
+        g_lastSaved = 0;
+        logger::info("co-save: revert");
+    }
 
     void ShowRecap()
     {
@@ -89,6 +99,7 @@ namespace
             if (a_event && !a_event->opening && g_pendingRecap &&
                 a_event->menuName == RE::LoadingMenu::MENU_NAME) {
                 g_pendingRecap = false;
+                logger::info("loading menu closed; queueing recap");
                 SKSE::GetTaskInterface()->AddTask(ShowRecap);
             }
             return RE::BSEventNotifyControl::kContinue;
@@ -101,13 +112,18 @@ namespace
         case SKSE::MessagingInterface::kDataLoaded:
             if (auto* ui = RE::UI::GetSingleton()) {
                 ui->AddEventSink<RE::MenuOpenCloseEvent>(LoadingMenuSink::GetSingleton());
+                logger::info("data loaded; menu sink registered");
+            } else {
+                logger::error("data loaded but RE::UI is null; recap will never show");
             }
             break;
         case SKSE::MessagingInterface::kPostLoadGame:
             g_pendingRecap = a_msg->data != nullptr;  // data is the load-success bool
+            logger::info("post load game; pending recap = {}", g_pendingRecap);
             break;
         case SKSE::MessagingInterface::kNewGame:
             g_pendingRecap = false;
+            logger::info("new game; no recap");
             break;
         default:
             break;
@@ -118,7 +134,8 @@ namespace
 SKSEPluginLoad(const SKSE::LoadInterface* a_skse)
 {
     SKSE::Init(a_skse);  // opens Documents/My Games/.../SKSE/WhereWasI.log
-    logger::info("WhereWasI loading");
+    spdlog::default_logger()->flush_on(spdlog::level::info);  // a crash must not eat the last lines
+    logger::info("WhereWasI loading on Skyrim {}", REL::Module::get().version().string());
 
     LoadConfig();
 
