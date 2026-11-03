@@ -70,18 +70,28 @@ namespace Recap
             return nullptr;
         }
 
+        // "north-east" etc. from a 2D offset; Skyrim's +Y is north, +X is east.
+        const char* Direction(float a_dx, float a_dy)
+        {
+            static constexpr const char* kNames[] = { "east", "north-east", "north", "north-west", "west", "south-west", "south", "south-east" };
+            const float deg = std::atan2(a_dy, a_dx) * 57.29578f;
+            const int octant = static_cast<int>(std::lround((deg < 0 ? deg + 360.0f : deg) / 45.0f)) % 8;
+            return kNames[octant];
+        }
+
         // Wilderness cells often carry no location at all (current=0, cellLoc=0). The world map's answer is the nearest
-        // map marker: they are persistent refs in the worldspace's persistent cell.
+        // discovered map marker: they are persistent refs in the worldspace's persistent cell.
         std::string NearestMarker(RE::PlayerCharacter* a_player, const RE::TESWorldSpace* a_ws)
         {
             if (!a_ws || !a_ws->persistentCell) {
                 return {};
             }
-            // Two exterior cells (4096 units each). Farther than that, "near X" misleads; fall back to the worldspace.
-            constexpr float kMaxDist = 8192.0f;
+            // 1 unit = 1.428 cm, so 70000 units ~ 1 km. Within that: "near X"; farther: "2 km north-east of X".
+            constexpr float kNear = 70000.0f;
             const auto pos = a_player->GetPosition();
             std::string best;
-            float bestDist = kMaxDist * kMaxDist;
+            RE::NiPoint3 bestPos;
+            float bestDist = std::numeric_limits<float>::max();
             int seen = 0;
             a_ws->persistentCell->ForEachReference([&](RE::TESObjectREFR* a_ref) {
                 const auto* marker = a_ref ? a_ref->extraList.GetByType<RE::ExtraMapMarker>() : nullptr;
@@ -94,13 +104,26 @@ namespace Recap
                     if (const float dist = d.x * d.x + d.y * d.y; dist < bestDist) {
                         bestDist = dist;
                         best = n;
+                        bestPos = a_ref->GetPosition();
                     }
                 }
                 return RE::BSContainer::ForEachResult::kContinue;
             });
-            logger::info("nearest map marker: '{}' at {:.0f} units, {} visible markers, limit {:.0f} (player at {:.0f},{:.0f})",
-                best, best.empty() ? 0.0f : std::sqrt(bestDist), seen, kMaxDist, pos.x, pos.y);
-            return best;
+            if (best.empty()) {
+                logger::info("nearest map marker: none of {} refs visible (player at {:.0f},{:.0f})", seen, pos.x, pos.y);
+                return {};
+            }
+            const float dist = std::sqrt(bestDist);
+            std::string text;
+            if (dist <= kNear) {
+                text = "near " + best;
+            } else {
+                const long km = std::max(1L, std::lround(dist / kNear));
+                text = std::to_string(km) + " km " + Direction(pos.x - bestPos.x, pos.y - bestPos.y) + " of " + best;
+            }
+            logger::info("nearest map marker: '{}' at {:.0f} units, {} visible markers (player at {:.0f},{:.0f}) -> '{}'",
+                best, dist, seen, pos.x, pos.y, text);
+            return text;
         }
 
         std::string LocationLine(RE::PlayerCharacter* a_player)
@@ -122,7 +145,7 @@ namespace Recap
             }
             if (!name || !*name) {
                 if (auto marker = NearestMarker(a_player, ws); !marker.empty()) {
-                    return "Location: near " + marker;
+                    return "Location: " + marker;
                 }
             }
             // Last resort: the worldspace ("Skyrim", "Solstheim") still tells where you are.
