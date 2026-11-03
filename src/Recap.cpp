@@ -161,13 +161,21 @@ namespace Recap
                                " | " + Format::Thousands(a_player->GetGoldAmount()) + " gold";
 
             std::int64_t bounty = 0;
+            int crimeFactions = 0;
             if (auto* data = RE::TESDataHandler::GetSingleton()) {
                 for (const auto* faction : data->GetFormArray<RE::TESFaction>()) {
                     if (faction && (faction->data.flags & RE::FACTION_DATA::kTrackCrime)) {
-                        bounty += std::max(faction->GetCrimeGold(), 0);
+                        ++crimeFactions;
+                        const auto gold = std::max(faction->GetCrimeGold(), 0);
+                        if (gold > 0) {
+                            const char* n = faction->GetFullName();
+                            logger::info("bounty: {:#x} '{}' name '{}' = {}", faction->GetFormID(), faction->GetFormEditorID(), n ? n : "", gold);
+                        }
+                        bounty += gold;
                     }
                 }
             }
+            logger::info("bounty: total {} over {} crime factions", bounty, crimeFactions);
             if (bounty > 0) {
                 line += " | Bounty " + Format::Thousands(bounty);
             }
