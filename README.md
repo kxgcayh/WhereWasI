@@ -81,5 +81,5 @@ Remove the mod. The timestamp left in your co-saves is ignored by the game and S
 
 ## Author
 
-By Kautsar Bana. Original work; no assets or code from other mods. Built with
+By Kautsar Al Bana ([kautsaralbaa](https://next.nexusmods.com/profile/kautsaralbaa) on Nexus Mods). Original work; no assets or code from other mods. Built with
 [CommonLibSSE-NG](https://github.com/alandtse/CommonLibSSE-NG).

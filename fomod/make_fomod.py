@@ -89,7 +89,7 @@ def module_config() -> str:
 def info_xml(cfg: dict) -> str:
     site = f"https://github.com/{cfg['github']['repo']}" if cfg.get("github", {}).get("repo") else ""
     return ('<?xml version="1.0" encoding="UTF-8"?>\n<fomod>'
-            f"<Name>{escape(cfg['display_name'])}</Name><Author>Kautsar Bana</Author>"
+            f"<Name>{escape(cfg['display_name'])}</Name><Author>Kautsar Al Bana (kautsaralbaa)</Author>"
             f"<Version>{escape(cfg['version'])}</Version><Description>{escape(cfg['description'])}</Description>"
             f"<Website>{escape(site)}</Website></fomod>\n")
 

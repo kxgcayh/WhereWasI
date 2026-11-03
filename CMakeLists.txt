@@ -10,7 +10,7 @@ file(GLOB_RECURSE HEADERS CONFIGURE_DEPENDS include/*.h src/*.h)
 # Struct-independent (NoStructUse) on purpose: NG runtime-data accessors pick the layout per runtime.
 # STRUCT_DEPENDENT would make SKSE treat it as pre-1.6.629 only.
 add_commonlibsse_plugin(${PROJECT_NAME}
-    AUTHOR "Kautsar Bana"
+    AUTHOR "Kautsar Al Bana"
     SOURCES ${HEADERS} ${SOURCES}
 )
 
