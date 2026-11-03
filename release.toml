@@ -6,6 +6,7 @@ description = "Recap on save load after a break: last played, active quest, loca
 # archive path = source path (relative to this folder)
 [files]
 "SKSE/Plugins/WhereWasI.dll" = "build/WhereWasI.dll"
+"LICENSE" = "LICENSE"
 # FOMOD installer (generated: python3 fomod/make_fomod.py); it installs one of the INIs as SKSE/Plugins/WhereWasI.ini
 "fomod/ModuleConfig.xml" = "fomod/ModuleConfig.xml"
 "fomod/info.xml" = "fomod/info.xml"

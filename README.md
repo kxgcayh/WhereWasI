@@ -83,3 +83,7 @@ Remove the mod. The timestamp left in your co-saves is ignored by the game and S
 
 By Kautsar Al Bana ([kautsaralbaa](https://next.nexusmods.com/profile/kautsaralbaa) on Nexus Mods). Original work; no assets or code from other mods. Built with
 [CommonLibSSE-NG](https://github.com/alandtse/CommonLibSSE-NG).
+
+## License
+
+GPL-3.0. See [LICENSE](LICENSE). Source code: https://github.com/kxgcayh/WhereWasI
