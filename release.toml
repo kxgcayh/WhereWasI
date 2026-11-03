@@ -6,7 +6,19 @@ description = "Recap on save load after a break: last played, active quest, loca
 # archive path = source path (relative to this folder)
 [files]
 "SKSE/Plugins/WhereWasI.dll" = "build/WhereWasI.dll"
-"SKSE/Plugins/WhereWasI.ini" = "WhereWasI.ini"
+# FOMOD installer (generated: python3 fomod/make_fomod.py); it installs one of the INIs as SKSE/Plugins/WhereWasI.ini
+"fomod/ModuleConfig.xml" = "fomod/ModuleConfig.xml"
+"fomod/info.xml" = "fomod/info.xml"
+"fomod/options/1d/WhereWasI.ini" = "fomod/options/1d/WhereWasI.ini"
+"fomod/options/2d/WhereWasI.ini" = "fomod/options/2d/WhereWasI.ini"
+"fomod/options/3d/WhereWasI.ini" = "fomod/options/3d/WhereWasI.ini"
+"fomod/options/4d/WhereWasI.ini" = "fomod/options/4d/WhereWasI.ini"
+"fomod/options/5d/WhereWasI.ini" = "fomod/options/5d/WhereWasI.ini"
+"fomod/options/6d/WhereWasI.ini" = "fomod/options/6d/WhereWasI.ini"
+"fomod/options/1w/WhereWasI.ini" = "fomod/options/1w/WhereWasI.ini"
+"fomod/options/2w/WhereWasI.ini" = "fomod/options/2w/WhereWasI.ini"
+"fomod/options/3w/WhereWasI.ini" = "fomod/options/3w/WhereWasI.ini"
+"fomod/options/4w/WhereWasI.ini" = "fomod/options/4w/WhereWasI.ini"
 
 [nexus]
 mod_id = 0      # set after creating the mod page on nexusmods.com
