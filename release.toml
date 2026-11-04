@@ -26,6 +26,7 @@ mod_id = 197919  # https://www.nexusmods.com/skyrimspecialedition/mods/197919
 file_id = 831653  # main file "Where Was I"
 category = "main"
 archive_existing = true
+mod_category = 39  # Nexus mod category: Utilities (the page's category); written as category= in the github .meta
 
 [github]
 repo = "kxgcayh/WhereWasI"
