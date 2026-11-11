@@ -86,6 +86,17 @@ Remove the mod. The timestamp left in your co-saves is ignored by the game and S
 By Kautsar Al Bana ([kautsaralbaa](https://next.nexusmods.com/profile/kautsaralbaa) on Nexus Mods). Original work; no assets or code from other mods. Built with
 [CommonLibSSE-NG](https://github.com/alandtse/CommonLibSSE-NG).
 
+## More mods
+
+Other Skyrim mods by kxgcayh:
+
+- [waccf-simonrim-skypatcher-patch](https://github.com/kxgcayh/waccf-simonrim-skypatcher-patch): Restores Simonrim enchantments, charges and names, and Gourmet effects, over WACCF's SkyPatcher configs.
+- [odin-mysticism-adamant-patch](https://github.com/kxgcayh/odin-mysticism-adamant-patch): Lets Odin - Skyrim Magic Overhaul run with Mysticism and Adamant.
+- [tposc-compat-patch](https://github.com/kxgcayh/tposc-compat-patch): The People Of Skyrim Complete patch: forwards USSEP fixes and keeps its landscape and navmesh over Cutting Room Floor.
+- [beasthhbb-ibeasts-jkj-patch](https://github.com/kxgcayh/beasthhbb-ibeasts-jkj-patch): Fixes headless and dark-faced Khajiit when Project ja-Kha'jay is used with BeastHHBB and iBeasts.
+- [lawless-tamrielic-patch-update](https://github.com/kxgcayh/lawless-tamrielic-patch-update): Updates the Lawless Bandit War plugins for Tamrielic Distribution 2.0 and later.
+- [UntarnishedUI-QuickLootIE-Patch](https://github.com/kxgcayh/UntarnishedUI-QuickLootIE-Patch): Untarnished UI skins for QuickLoot IE 4.x.
+
 ## License
 
 GPL-3.0. See [LICENSE](LICENSE). Source code: https://github.com/kxgcayh/WhereWasI
